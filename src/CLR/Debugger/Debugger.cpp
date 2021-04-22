@@ -59,6 +59,8 @@ void CLR_DBG_Debugger::Debugger_Discovery()
 
     CLR_INT32 wait_sec = 5;
 
+    uint8_t loopCounter = 1;
+
     CLR_INT64 expire = HAL_Time_CurrentTime() + (wait_sec * TIME_CONVERSION__TO_SECONDS);
 
     // Send "presence" ping.
@@ -96,6 +98,11 @@ void CLR_DBG_Debugger::Debugger_Discovery()
             CLR_Debug::Printf("No debugger found...\r\n");
             break;
         }
+
+        // pause for 250ms so this is not flooding the channel with PING packets
+        Events_WaitForEvents(0, loopCounter * 250);
+
+        loopCounter++;
     }
 
     g_CLR_RT_ExecutionEngine.WaitForDebugger();
