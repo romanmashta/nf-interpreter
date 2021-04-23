@@ -17,8 +17,6 @@
 #define TARGET_SERIAL_BAUDRATE 921600
 #endif
 
-WP_Message inboundMessage;
-
 bool WP_Initialise(COM_HANDLE port);
 
 static bool WP_Port_Intitialised = false;
@@ -84,7 +82,7 @@ bool WP_Initialise(COM_HANDLE port)
     return true;
 }
 
-bool WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
+uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
 {
     // TODO: Initialise Port if not already done, Wire Protocol should be calling this directly at startup
     if (!WP_Port_Intitialised)
@@ -92,7 +90,7 @@ bool WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
         WP_Initialise(WP_Port);
     }
 
-    // save for latter comparison
+    // save for later comparison
     uint16_t requestedSize = *size;
 
     // check for request with 0 size
@@ -111,7 +109,7 @@ bool WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
     return true;
 }
 
-bool WP_TransmitMessage(WP_Message *message)
+uint8_t WP_TransmitMessage(WP_Message *message)
 {
     if (!WP_Port_Intitialised)
     {

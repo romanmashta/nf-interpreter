@@ -46,7 +46,7 @@ __attribute__((noreturn)) void ReceiverThread(void const *argument)
 
 #elif (HAL_USE_SERIAL == TRUE)
         // delay here to give other threads a chance to run
-        osDelay(100);
+        osThreadYield();
 #endif
     }
 

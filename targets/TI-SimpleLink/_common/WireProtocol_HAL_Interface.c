@@ -17,11 +17,9 @@
 
 UART2_Handle uart = NULL;
 
-WP_Message inboundMessage;
-
-bool WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
+uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
 {
-    // save for latter comparison
+    // save for later comparison
     uint16_t requestedSize = *size;
     size_t read;
 
@@ -41,7 +39,7 @@ bool WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
     return true;
 }
 
-bool WP_TransmitMessage(WP_Message *message)
+uint8_t WP_TransmitMessage(WP_Message *message)
 {
     uint32_t writeResult;
     bool operationResult = false;

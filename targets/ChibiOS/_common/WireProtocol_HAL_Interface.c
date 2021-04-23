@@ -15,21 +15,19 @@
 #include <serialcfg.h>
 #endif
 
-WP_Message inboundMessage;
-
 #if (HAL_USE_SERIAL_USB == TRUE)
 
 uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
 {
-    // save for latter comparison
+    // save for later comparison
     uint16_t requestedSize = *size;
     (void)requestedSize;
 
     // check for request with 0 size
     if (*size)
     {
-        // read from serial stream with 250ms timeout
-        size_t read = chnReadTimeout(&SDU1, ptr, *size, TIME_MS2I(250));
+        // read from serial stream with 100ms timeout
+        size_t read = chnReadTimeout(&SDU1, ptr, requestedSize, TIME_MS2I(100));
 
         ptr += read;
         *size -= read;
@@ -46,15 +44,15 @@ uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
 
 uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
 {
-    // save for latter comparison
+    // save for later comparison
     uint16_t requestedSize = *size;
     (void)requestedSize;
 
     // check for request with 0 size
     if (*size)
     {
-        // non blocking read from serial port with 10ms timeout
-        volatile size_t read = chnReadTimeout(&SERIAL_DRIVER, ptr, *size, TIME_MS2I(10));
+        // non blocking read from serial port with 100ms timeout
+        volatile size_t read = chnReadTimeout(&SERIAL_DRIVER, ptr, requestedSize, TIME_MS2I(100));
 
         ptr += read;
         *size -= read;
