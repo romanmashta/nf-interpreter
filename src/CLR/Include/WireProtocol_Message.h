@@ -55,6 +55,8 @@ extern "C"
     uint8_t WP_Message_VerifyPayload(WP_Message *message);
     void WP_Message_Process();
 
+    void WP_Message_PrepareReception_Platform();
+
 #ifdef __cplusplus
 }
 #endif

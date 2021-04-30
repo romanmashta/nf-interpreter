@@ -96,6 +96,9 @@ void WP_Message_PrepareReception()
     _pos = (uint8_t *)&_inboundMessage.m_header;
     _size = sizeof(_inboundMessage.m_header);
 
+    // platform initializations
+    WP_Message_PrepareReception_Platform();
+
     WP_Message_Initialize(&_inboundMessage);
 }
 
