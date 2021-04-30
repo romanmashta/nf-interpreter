@@ -71,7 +71,7 @@ void CLR_DBG_Debugger::Debugger_Discovery()
     {
         CLR_EE_DBG_EVENT_BROADCAST(
             CLR_DBG_Commands::c_Monitor_Ping,
-            sizeof(cmd),
+            0,
             &cmd,
             WP_Flags_c_NoCaching | WP_Flags_c_NonCritical);
 
