@@ -105,6 +105,12 @@ uint8_t WP_ReceiveBytes(uint8_t *ptr, uint32_t *size)
             return false;
         }
 
+        // check if any bytes where read
+        if(read == 0)
+        {
+            return false;
+        }
+
         ptr += read;
         *size -= read;
     }
