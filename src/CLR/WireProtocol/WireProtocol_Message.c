@@ -14,12 +14,13 @@
 #define TIME_CONVERSION__TO_SYSTICKS 10000
 
 static uint16_t _lastOutboundMessage = 65535;
-static uint64_t _payloadExpiryTicks;
+static uint64_t _receiveExpiryTicks;
 static uint8_t *_marker;
 static uint8_t *_pos;
-static uint16_t _size;
+static uint32_t _size;
 static uint8_t _rxState;
 static WP_Message _inboundMessage;
+static uint8_t *buf = (uint8_t *)&(_inboundMessage.m_header);
 
 #ifdef DEBUG
 volatile uint8_t _rxStatePrev;
@@ -28,6 +29,9 @@ volatile uint8_t _rxStatePrev;
 // timeout to receive WP payload before bailing out
 // 5 secs (100 nsecs units)
 static const uint64_t c_PayloadTimeout = 5 * TIME_CONVERSION__TO_SYSTICKS;
+// timeout to receive WP header before bailing out
+// 2 secs (100 nsecs units)
+static const uint64_t c_HeaderTimeout = 2 * TIME_CONVERSION__TO_SYSTICKS;
 
 extern void debug_printf(const char *format, ...);
 
@@ -224,21 +228,17 @@ uint8_t WP_Message_VerifyPayload(WP_Message *message)
 
 void WP_Message_Process()
 {
-    uint8_t *buf = (uint8_t *)&_inboundMessage.m_header;
-    uint16_t len;
+    uint32_t len;
     uint64_t now;
-
-    ASSERT(_rxState >= ReceiveState_Idle && _rxState <= ReceiveState_CompletePayload);
-    // ASSERT(_pos >= (uint8_t *)&_inboundMessage.m_header);
-    // ASSERT(_pos <= (uint8_t *)&_inboundMessage.m_header + sizeof(_inboundMessage.m_header));
-
-#ifdef DEBUG
-    // store this here to debug issues with wrong sequence of state machine
-    _rxStatePrev = _rxState;
-#endif
 
     while (true)
     {
+        ASSERT(_rxState >= ReceiveState_Idle && _rxState <= ReceiveState_CompletePayload);
+
+#ifdef DEBUG
+        // store this here to debug issues with wrong sequence of state machine
+        _rxStatePrev = _rxState;
+#endif
         switch (_rxState)
         {
             case ReceiveState_Idle:
@@ -258,8 +258,6 @@ void WP_Message_Process()
             case ReceiveState_WaitingForHeader:
                 TRACE0(TRACE_STATE, "RxState==WaitForHeader\n");
 
-                ASSERT(_size <= sizeof(_inboundMessage.m_header));
-
                 if (!WP_ReceiveBytes(_pos, &_size))
                 {
                     // didn't receive the expected amount of bytes, returning false
@@ -268,19 +266,15 @@ void WP_Message_Process()
                     return;
                 }
 
-                ASSERT(_size <= sizeof(_inboundMessage.m_header));
-
                 // Synch to the start of a message by looking for a valid MARKER
                 while (true)
                 {
                     len = sizeof(_inboundMessage.m_header) - _size;
 
-                    if (len <= 0)
+                    if (len == 0)
                     {
                         break;
                     }
-
-                    ASSERT(len <= sizeof(_inboundMessage.m_header));
 
                     size_t lenCmp = min(len, sizeof(_inboundMessage.m_header.m_signature));
 
@@ -299,29 +293,54 @@ void WP_Message_Process()
                     _size++;
                 }
 
-                if (len >= sizeof(_inboundMessage.m_header.m_signature))
+                if (_size == 0)
                 {
-                    _rxState = ReceiveState_ReadingHeader;
+                    // header reception completed
+                    _rxState = ReceiveState_CompleteHeader;
                 }
+                else if (len >= sizeof(_inboundMessage.m_header.m_signature))
+                {
+                    // still missing some bytes for the header
+                    _rxState = ReceiveState_ReadingHeader;
+                    _receiveExpiryTicks = HAL_Time_CurrentSysTicks() + c_HeaderTimeout;
+                }
+
                 break;
 
             case ReceiveState_ReadingHeader:
                 TRACE0(TRACE_STATE, "RxState==ReadingHeader\n");
-                if (!WP_ReceiveBytes(_pos, &_size))
+
+                // If the time between consecutive header bytes exceeds the timeout threshold then assume that
+                // the rest of the header is not coming. Reinitialize to sync with the next header.
+
+                now = HAL_Time_CurrentSysTicks();
+
+                if (_receiveExpiryTicks > now)
                 {
-                    // didn't receive the expected amount of bytes, returning false
-                    TRACE0(TRACE_NODATA, "ReceiveBytes returned false - bailing out\n");
+                    if (!WP_ReceiveBytes(_pos, &_size))
+                    {
+                        // didn't receive the expected amount of bytes, returning false
+                        TRACE0(TRACE_NODATA, "ReceiveBytes returned false - bailing out\n");
+                        return;
+                    }
+
+                    if (_size == 0)
+                    {
+                        _rxState = ReceiveState_CompleteHeader;
+                    }
+                }
+                else
+                {
+                    TRACE0(TRACE_ERRORS, "RxError: Header InterCharacterTimeout exceeded\n");
+                    _rxState = ReceiveState_Initialize;
+
                     return;
                 }
 
-                if (_size == 0)
-                {
-                    _rxState = ReceiveState_CompleteHeader;
-                }
                 break;
 
             case ReceiveState_CompleteHeader:
-            
+
                 TRACE0(TRACE_STATE, "RxState=CompleteHeader\n");
 
                 if (WP_Message_VerifyHeader(&_inboundMessage))
@@ -344,24 +363,26 @@ void WP_Message_Process()
                                 break;
                             }
 
-                            _payloadExpiryTicks = HAL_Time_CurrentSysTicks() + c_PayloadTimeout;
+                            _receiveExpiryTicks = HAL_Time_CurrentSysTicks() + c_PayloadTimeout;
                             _pos = _inboundMessage.m_payload;
                             _size = _inboundMessage.m_header.m_size;
 
                             _rxState = ReceiveState_ReadingPayload;
+
+                            break;
                         }
                         else
                         {
                             _rxState = ReceiveState_CompletePayload;
+
+                            break;
                         }
                     }
                 }
-                else
-                {
-                    _rxState = ReceiveState_Initialize;
-                }
-                
-                break;
+
+                // one the verifications above failed, return
+                _rxState = ReceiveState_Initialize;
+                return;
 
             case ReceiveState_ReadingPayload:
 
@@ -372,7 +393,7 @@ void WP_Message_Process()
 
                 now = HAL_Time_CurrentSysTicks();
 
-                if (_payloadExpiryTicks > now)
+                if (_receiveExpiryTicks > now)
                 {
                     if (!WP_ReceiveBytes(_pos, &_size))
                     {
@@ -390,6 +411,8 @@ void WP_Message_Process()
                 {
                     TRACE0(TRACE_ERRORS, "RxError: Payload InterCharacterTimeout exceeded\n");
                     _rxState = ReceiveState_Initialize;
+
+                    return;
                 }
 
                 break;
@@ -403,8 +426,7 @@ void WP_Message_Process()
 
                 _rxState = ReceiveState_Initialize;
 
-                // return for cooperative RTOS thread switch
-                return;
+                break;
 
             default:
                 // unknown state
