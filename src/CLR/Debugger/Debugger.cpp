@@ -1012,30 +1012,27 @@ bool CLR_DBG_Debugger::Monitor_Reboot(WP_Message *msg)
 
     CLR_DBG_Commands::Monitor_Reboot *cmd = (CLR_DBG_Commands::Monitor_Reboot *)msg->m_payload;
 
-    if (NULL != cmd)
+    if (CLR_DBG_Commands::Monitor_Reboot::c_EnterNanoBooter ==
+        (cmd->m_flags & CLR_DBG_Commands::Monitor_Reboot::c_EnterNanoBooter))
     {
-        if (CLR_DBG_Commands::Monitor_Reboot::c_EnterNanoBooter ==
-            (cmd->m_flags & CLR_DBG_Commands::Monitor_Reboot::c_EnterNanoBooter))
-        {
-            success = RequestToLaunchNanoBooter();
-        }
-        else if (
-            CLR_DBG_Commands::Monitor_Reboot::c_EnterProprietaryBooter ==
-            (cmd->m_flags & CLR_DBG_Commands::Monitor_Reboot::c_EnterProprietaryBooter))
-        {
-            success = RequestToLaunchProprietaryBootloader();
-        }
-
-        g_CLR_RT_ExecutionEngine.m_iReboot_Options = cmd->m_flags;
+        success = RequestToLaunchNanoBooter();
     }
-
-    Events_WaitForEvents(0, 100); // give message a little time to be flushed
-
+    else if (
+        CLR_DBG_Commands::Monitor_Reboot::c_EnterProprietaryBooter ==
+        (cmd->m_flags & CLR_DBG_Commands::Monitor_Reboot::c_EnterProprietaryBooter))
+    {
+        success = RequestToLaunchProprietaryBootloader();
+    }
+    
     WP_ReplyToCommand(msg, success, false, NULL, 0);
 
-    Events_WaitForEvents(0, 100); // give message a little time to be flushed
+    // on success, apply reboot options and set reboot pending flag
+    if (success)
+    {
+        g_CLR_RT_ExecutionEngine.m_iReboot_Options = cmd->m_flags;
 
-    CLR_EE_DBG_SET(RebootPending);
+        CLR_EE_DBG_SET(RebootPending);
+    }
 
     return true;
 }
