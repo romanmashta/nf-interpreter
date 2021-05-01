@@ -16,7 +16,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 // provided as weak to be replaced by actual implementation by HAL interface
-__nfweak uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
+__nfweak uint8_t WP_ReceiveBytes(uint8_t *ptr, uint32_t *size)
 {
     (void)(ptr);
     (void)(size);

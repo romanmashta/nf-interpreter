@@ -17,7 +17,7 @@
 /// @param size Number of bytes to read. On return it will have the number of bytes actually received.
 /// @return bool true if any bytes where received, false otherwise.
 ///
-uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size);
+uint8_t WP_ReceiveBytes(uint8_t *ptr, uint32_t *size);
 
 ///
 /// @brief Sends a message through the Wire Protocol channel.

@@ -82,7 +82,7 @@ bool WP_Initialise(COM_HANDLE port)
     return true;
 }
 
-uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
+uint8_t WP_ReceiveBytes(uint8_t *ptr, uint32_t *size)
 {
     // TODO: Initialise Port if not already done, Wire Protocol should be calling this directly at startup
     if (!WP_Port_Intitialised)
@@ -91,7 +91,7 @@ uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
     }
 
     // save for later comparison
-    uint16_t requestedSize = *size;
+    uint32_t requestedSize = *size;
 
     // check for request with 0 size
     if (*size)
@@ -99,11 +99,14 @@ uint8_t WP_ReceiveBytes(uint8_t *ptr, uint16_t *size)
         // non blocking read from serial port with 100ms timeout
         size_t read = uart_read_bytes(WP_Port, ptr, (uint32_t)requestedSize, (TickType_t)100 / portTICK_PERIOD_MS);
 
+        // check if any bytes where read
+        if(read == 0)
+        {
+            return false;
+        }
+
         ptr += read;
         *size -= read;
-
-        // check if any bytes where read
-        return read > 0;
     }
 
     return true;
