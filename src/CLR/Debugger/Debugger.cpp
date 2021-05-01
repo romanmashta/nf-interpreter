@@ -1271,21 +1271,26 @@ bool CLR_DBG_Debugger::Debugging_Execution_ChangeConditions(WP_Message *msg)
     CLR_DBG_Commands::Debugging_Execution_ChangeConditions *cmd =
         (CLR_DBG_Commands::Debugging_Execution_ChangeConditions *)msg->m_payload;
 
-    g_CLR_RT_ExecutionEngine.m_iDebugger_Conditions |= cmd->FlagsToSet;
-    g_CLR_RT_ExecutionEngine.m_iDebugger_Conditions &= ~cmd->FlagsToReset;
+    // save current value
+    int32_t conditionsCopy = g_CLR_RT_ExecutionEngine.m_iDebugger_Conditions;
 
-    // updating the debugging execution conditions requires sometime to propagate
-    // make sure we allow enough time for that to happen
-    OS_DELAY(200);
+    // apply received flags
+    conditionsCopy |= cmd->FlagsToSet;
+    conditionsCopy &= ~cmd->FlagsToReset;
 
+    // send confirmation reply
     if ((msg->m_header.m_flags & WP_Flags_c_NonCritical) == 0)
     {
         CLR_DBG_Commands::Debugging_Execution_ChangeConditions::Reply cmdReply;
 
-        cmdReply.CurrentState = g_CLR_RT_ExecutionEngine.m_iDebugger_Conditions;
+        cmdReply.CurrentState = conditionsCopy;
 
         WP_ReplyToCommand(msg, true, false, &cmdReply, sizeof(cmdReply));
     }
+
+    // set & reset new conditions
+    g_CLR_RT_ExecutionEngine.m_iDebugger_Conditions |= cmd->FlagsToSet;
+    g_CLR_RT_ExecutionEngine.m_iDebugger_Conditions &= ~cmd->FlagsToReset;
 
     return true;
 }
