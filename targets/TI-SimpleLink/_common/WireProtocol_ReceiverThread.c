@@ -24,3 +24,8 @@ void ReceiverThread(UArg arg0, UArg arg1)
         Task_yield();
     }
 }
+
+void WP_Message_PrepareReception_Platform()
+{
+    // empty on purpose, nothing to configure
+}

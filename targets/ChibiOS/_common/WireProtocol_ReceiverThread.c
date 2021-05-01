@@ -52,3 +52,8 @@ __attribute__((noreturn)) void ReceiverThread(void const *argument)
 
     // this function never returns
 }
+
+void WP_Message_PrepareReception_Platform()
+{
+    // empty on purpose, nothing to configure
+}

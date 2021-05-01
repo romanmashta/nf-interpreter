@@ -25,3 +25,8 @@ void ReceiverThread(void const *argument)
 
     // nothing to deinitialize or cleanup, so it's safe to return
 }
+
+void WP_Message_PrepareReception_Platform()
+{
+    // empty on purpose, nothing to configure
+}
