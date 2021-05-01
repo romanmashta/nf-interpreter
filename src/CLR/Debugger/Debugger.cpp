@@ -100,7 +100,7 @@ void CLR_DBG_Debugger::Debugger_Discovery()
         }
 
         // pause for 250ms so this is not flooding the channel with PING packets
-        Events_WaitForEvents(0, loopCounter * 250);
+        Events_WaitForEvents(0, loopCounter * 500);
 
         loopCounter++;
     }
