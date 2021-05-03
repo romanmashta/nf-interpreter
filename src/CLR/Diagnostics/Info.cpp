@@ -235,7 +235,7 @@ void CLR_Debug::Emit(const char *text, int len)
                     WP_Flags_c_NonCritical | WP_Flags_c_NoCaching);
             }
 
-            if (!CLR_EE_DBG_IS( Enabled ) || HalSystemConfig.DebugTextPort != HalSystemConfig.DebuggerPort)
+            if (CLR_EE_DBG_IS_NOT(Enabled) || HalSystemConfig.DebugTextPort != HalSystemConfig.DebuggerPort)
             {
 
 #if !defined(_WIN32)
