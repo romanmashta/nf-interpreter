@@ -102,8 +102,6 @@ void WP_Message_PrepareReception()
 
     // platform initializations
     WP_Message_PrepareReception_Platform();
-
-    WP_Message_Initialize(&_inboundMessage);
 }
 
 void WP_Message_PrepareRequest(
@@ -452,6 +450,7 @@ void WP_PrepareAndSendProtocolMessage(uint32_t cmd, uint32_t payloadSize, uint8_
     WP_Message message;
 
     WP_Message_Initialize(&message);
+
     WP_Message_PrepareRequest(&message, cmd, flags, payloadSize, payload);
 
     TRACE(
