@@ -6,8 +6,9 @@
 using System;
 using System.IO.Ports;
 using System.Linq;
+using nanoFramework.nanoCLR.Host.Interop;
 
-namespace nanoFramework.nanoCLR.Host
+namespace nanoFramework.nanoCLR.Host.Debugger
 {
     public class SerialPortSink : IDeviceSink
     {

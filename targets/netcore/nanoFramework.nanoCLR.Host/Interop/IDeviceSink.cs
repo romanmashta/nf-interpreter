@@ -5,7 +5,7 @@
 
 using System;
 
-namespace nanoFramework.nanoCLR.Host
+namespace nanoFramework.nanoCLR.Host.Interop
 {
     public interface IDeviceSink
     {

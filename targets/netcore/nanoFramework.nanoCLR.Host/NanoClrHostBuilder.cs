@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using nanoFramework.nanoCLR.DebugLibrary;
+using nanoFramework.nanoCLR.Host.Debugger;
+using nanoFramework.nanoCLR.Host.Interop;
 
 namespace nanoFramework.nanoCLR.Host
 {
@@ -15,6 +18,7 @@ namespace nanoFramework.nanoCLR.Host
         private static NanoClrHost s_nanoClrHost = null;
         private readonly List<Action> _configureSteps = new();
         private readonly List<Action> _preInitConfigureSteps = new();
+        private VirtualDevice _virtualDevice;
         private IDeviceSink _wireProtocolSink;
 
         public int MaxContextSwitches { get; set; } = 50;
@@ -23,7 +27,7 @@ namespace nanoFramework.nanoCLR.Host
 
         public NanoClrHostBuilder LoadAssembly(string name, byte[] data)
         {
-            _configureSteps.Add(() => Interop.NanoClr_LoadAssembly(name, data, data.Length));
+            _configureSteps.Add(() => NanoInterop.NanoClr_LoadAssembly(name, data, data.Length));
             return this;
         }
 
@@ -41,7 +45,7 @@ namespace nanoFramework.nanoCLR.Host
 
         public NanoClrHostBuilder LoadAssembliesSet(byte[] data)
         {
-            _configureSteps.Add(() => Interop.NanoClr_LoadAssembliesSet(data, data.Length));
+            _configureSteps.Add(() => NanoInterop.NanoClr_LoadAssembliesSet(data, data.Length));
             return this;
         }
 
@@ -53,7 +57,7 @@ namespace nanoFramework.nanoCLR.Host
 
         public NanoClrHostBuilder UseDebugPrintCallback(Action<string> debugPrint)
         {
-            _preInitConfigureSteps.Add(() => Interop.NanoClr_SetDebugPrintCallback((msg) => debugPrint(msg)));
+            _preInitConfigureSteps.Add(() => NanoInterop.NanoClr_SetDebugPrintCallback((msg) => debugPrint(msg)));
             return this;
         }
 
@@ -61,13 +65,22 @@ namespace nanoFramework.nanoCLR.Host
 
         public NanoClrHostBuilder TryResolve()
         {
-            _preInitConfigureSteps.Add(() => Interop.NanoClr_Resolve());
+            _preInitConfigureSteps.Add(() => NanoInterop.NanoClr_Resolve());
             return this;
         }
 
         public NanoClrHostBuilder UseWireProtocolSink(IDeviceSink sink)
         {
             _wireProtocolSink = sink;
+            return this;
+        }
+
+        public NanoClrHostBuilder UseLocalDebugger()
+        {
+            _virtualDevice = new VirtualDevice();
+            var sink = new DebuggerInteropSink();
+            _virtualDevice.ConnectionPort = sink;
+            UseWireProtocolSink(sink);
             return this;
         }
 
@@ -80,6 +93,7 @@ namespace nanoFramework.nanoCLR.Host
                 throw new InvalidOperationException("Cannot build two NanoClr runtime hosts");
 
             s_nanoClrHost = new NanoClrHost();
+            s_nanoClrHost.Device = _virtualDevice;
             s_nanoClrHost.WireProtocolSink = _wireProtocolSink;
             s_nanoClrHost.ConfigureSteps.AddRange(_configureSteps);
             s_nanoClrHost.PreInitConfigureSteps.AddRange(_preInitConfigureSteps);

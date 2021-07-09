@@ -6,7 +6,7 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 
-namespace nanoFramework.nanoCLR.Host
+namespace nanoFramework.nanoCLR.Host.Debugger
 {
     public static class SerialPortExtensions
     {

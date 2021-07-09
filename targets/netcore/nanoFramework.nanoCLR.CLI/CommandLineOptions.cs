@@ -26,5 +26,8 @@ namespace nanoFramework.nanoCLR.CLI
 
         [Option('r', "resolve", Required = false, HelpText = "Tries to resolve cross-assembly references")]
         public bool TryResolve { get; set; }
+
+        [Option('i', "info", Required = false, HelpText = "Display nanoCLR Virtual Device Info")]
+        public bool DeviceInfo { get; set; }
     }
 }

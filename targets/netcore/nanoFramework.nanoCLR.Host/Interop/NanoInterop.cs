@@ -5,9 +5,9 @@
 
 using System.Runtime.InteropServices;
 
-namespace nanoFramework.nanoCLR.Host
+namespace nanoFramework.nanoCLR.Host.Interop
 {
-    internal class Interop
+    internal class NanoInterop
     {
         internal const uint ClrOk = 0;
         internal const uint ClrErrorFail = 0xFF000000;

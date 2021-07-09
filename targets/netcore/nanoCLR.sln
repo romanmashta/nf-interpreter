@@ -80,7 +80,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nanoFramework.nanoCLR.Host"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "System.Device.Gpio", "..\..\src\System.Device.Gpio\System.Device.Gpio.vcxproj", "{830A7E28-7B2B-4BE6-8888-A39775A0092A}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "nanoFramework.Tools.DebugLibrary.Shared", "nf-debugger\nanoFramework.Tools.DebugLibrary.Shared\nanoFramework.Tools.DebugLibrary.Shared.shproj", "{31472CAE-4B1A-4AB9-9B2A-8F28DBE01BCF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nanoFramework.nanoCLR.DebugLibrary", "nanoFramework.nanoCLR.DebugLibrary\nanoFramework.nanoCLR.DebugLibrary.csproj", "{B1596000-E12F-422A-AE05-9933F94D26AB}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		nf-debugger\nanoFramework.Tools.DebugLibrary.Shared\nanoFramework.Tools.DebugLibrary.Net.projitems*{31472cae-4b1a-4ab9-9b2a-8f28dbe01bcf}*SharedItemsImports = 13
+		nf-debugger\nanoFramework.Tools.DebugLibrary.Shared\nanoFramework.Tools.DebugLibrary.Net.projitems*{ed0db0e3-424a-47c7-88f0-48d79169d18b}*SharedItemsImports = 5
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
 		Release|x86 = Release|x86
@@ -218,6 +226,10 @@ Global
 		{830A7E28-7B2B-4BE6-8888-A39775A0092A}.Debug|x86.Build.0 = Debug|Win32
 		{830A7E28-7B2B-4BE6-8888-A39775A0092A}.Release|x86.ActiveCfg = Release|Win32
 		{830A7E28-7B2B-4BE6-8888-A39775A0092A}.Release|x86.Build.0 = Release|Win32
+		{B1596000-E12F-422A-AE05-9933F94D26AB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B1596000-E12F-422A-AE05-9933F94D26AB}.Debug|x86.Build.0 = Debug|Any CPU
+		{B1596000-E12F-422A-AE05-9933F94D26AB}.Release|x86.ActiveCfg = Release|Any CPU
+		{B1596000-E12F-422A-AE05-9933F94D26AB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
