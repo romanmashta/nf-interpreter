@@ -1,3 +1,6 @@
 [submodule "targets-community"]
 	path = targets-community
 	url = ../nf-Community-Targets.git
+[submodule "targets/netcore/nf-debugger"]
+	path = targets/netcore/nf-debugger
+	url = ../nf-debugger.git
